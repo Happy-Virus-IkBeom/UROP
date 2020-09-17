@@ -1,59 +1,10 @@
-# OpenLTH: A Framework for Lottery Tickets and Beyond
+# Project of UROP (Undergraduate Research Opportunity Program)
 
-### Welcome
+[IkBeom Lee & Albert No]
+Department of Electronic and Electrical Engineering
+Hongik University
 
-This framework implements key experiments from recent work on the lottery ticket hypothesis and the science of deep learning:
-
-* [_The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks._](https://openreview.net/forum?id=rJl-b3RcF7) Jonathan Frankle & Michael Carbin. ICLR 2019.
-* [_Stabilizing the LTH/The LTH at Scale._](https://arxiv.org/abs/1903.01611) Jonathan Frankle, Gintare Karolina Dziugaite, Daniel M. Roy, & Michael Carbin. Arxiv.
-* [_Linear Mode Connectivity and the LTH._](https://arxiv.org/abs/1912.05671) Jonathan Frankle, Gintare Karolina Dziugaite, Daniel M. Roy, & Michael Carbin. Arxiv.
-* [_The Early Phase of Neural Network Training._](https://openreview.net/forum?id=Hkl1iRNFwS) Jonathan Frankle, David J. Schwab, and Ari S. Morcos. ICLR 2020.
-* [_Training BatchNorm and Only BatchNorm._](https://arxiv.org/abs/2003.00152) Jonathan Frankle, David J. Schwab, & Ari S. Morcos. Arxiv
-
-It was created by [Jonathan Frankle](http://www.jfrankle.com) during his time as a summer intern and student researcher at FAIR starting in June 2019. It is his current working research codebase for image classification experiments on the lottery ticket hypothesis.
-
-### Citation
-
-If you use this library in a research paper, please cite this repository.
-
-### License
-
-OpenLTH is licensed under the MIT license, as found in the LICENSE file.
-
-### Contributing
-
-We welcome your contributions! See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.
-
-## Table of Contents
-
-### [1 Overview](#overview)
-### [2 Getting Started](#getting-started)
-### [3 Internals](#internals)
-### [4 Extending the Framework](#extending)
-### [5 Acknowledgements](#acknowledgements)
-
-## <a name=overview></a>1 Overview
-
-### 1.1 Purpose
-
-This framework is designed with four goals in mind:
-
-1. To train standard neural networks for image classification tasks.
-2. To run pruning and lottery ticket experiments.
-3. To automatically manage experiments and results without any manual intervention.
-4. To make it easy to add new datasets, models, and other modifications.
-
-### 1.2 Why Another Framework?
-
-This framework and its predecessors were developed in the course of conducting research on the lottery ticket hypothesis.
-* **Pruning.** Those experiments involve pruning neural networks. Pruning is a first-class citizen of the framework.
-* **Hyperparameter management.** Those experiments involve extensive hyperparameter sweeps. Default hyperparameters are easy to modify, and results are automatically indexed by the hyperparameters (so you never need to worry about naming experiments).
-* **Extensibility.** Those experiments study an ever-growing range of models and datasets. Consistent abstractions for models and datasets make it easy to add new ones in a modular way.
-* **Enabling new experiments.** Those experiments involve adding new hyperparameters. Each hyperparameter automatically surfaces on the command-line and integrates into experiment naming in a backwards-compatible way.
-* **Re-training and ablation.** Those experiments rely on many post-hoc re-training and ablation experiments. Such experiments can be created by writing a single function, after which they are automatically available to be called from the command line and stored in a standard way.
-* **Platform flexibility.** Those experiments have had to run on many different platforms and providers. The notion of a "platform" is a first-class abstraction, making it easy to adapt the framework to new settings or to multiple settings.
-
-## <a name='getting-started'></a>2 Getting Started
+It was created by [IkBeom Lee] during his time as a undergraduate research assistant at Information Theory lab, Hongik University, Seoul, Korea starting in July. He has been advised by Albert No, assistant professor at Hongik University. It is his current working research codebase for UROP Projects. The prior study of this project is * [_The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks._](https://openreview.net/forum?id=rJl-b3RcF7) Jonathan Frankle & Michael Carbin. ICLR 2019.
 
 ### 2.1 Requirements
 
@@ -497,8 +448,3 @@ Finally, register this branch in `lottery/branch/registry.py`
 ### 4.10 Adding a New Platform
 
 Subclass the `Platform` class (from `platforms/base.py`) in a new file in the `platforms` directory. Be sure to make it a dataclass. Add any additional fields and, optionally, help strings for these fields (named `_f` for a field `f`). Implement all the required abstract properties (`root`, `dataset_root`, and `imagenet_root` if ImageNet is available). Finally, override `run_job()` if different behavior is needed for the platform; be sure to ensure that the modified `run_job()` method still installs the platform instance before calling the job function `f`.
-
-
-## <a name=acknowledgements></a>5 Acknowledgements
-
-Thank you to Ari Morcos and David Schwab for supporting the development of this framework and the research that we conducted with it. Thank you to FAIR for allowing me to open-source this framework. Thank you to David Bieber for teaching me how to do software engineering around deep learning and for the many ideas I borrowed from [Python Fire](https://github.com/google/python-fire).
