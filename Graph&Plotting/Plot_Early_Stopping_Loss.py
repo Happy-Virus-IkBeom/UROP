@@ -95,11 +95,15 @@ def Early_Stopping_Loss_List():
     return Loss_list, Index_list, level
 
 def Plot_Early_Stopping_Loss():
-    Loss_list, Index_list, level = Early_Stopping_Loss_List()
+    Loss_list, Index_list, level, file_path = Early_Stopping_Loss_List()
     x_range = np.linspace(0, level, level + 1)
-    y = Loss_list
+    y1 = Loss_list
+    y2 = Index_list
     plt.cla()
-    plt.plot(x_range,y)
-    plt.show()
+    plt.subplot(2,1,1)
+    plt.plot(x_range, y1, color = 'blue', marker = '+', label = 'Early_Stopping_Loss')
+    plt.subplot(2,1,2)
+    plt.plot(x_range, y2, color = 'red', marker = 'x', label = 'Early_Stopping_epoch')
+    plt.savefig(f'{file_path}\Early_Stopping_Loss&Epoch.png')
 
 Plot_Early_Stopping_Loss()
