@@ -92,7 +92,7 @@ def Early_Stopping_Loss_List():
         print(f'Loss_list is: \n {Loss_list}')
         print(f'Index_list is: \n {Index_list}')
 
-    return Loss_list, Index_list, level
+    return Loss_list, Index_list, level, file_path
 
 def Plot_Early_Stopping_Loss():
     Loss_list, Index_list, level, file_path = Early_Stopping_Loss_List()
