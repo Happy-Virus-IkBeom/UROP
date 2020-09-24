@@ -1,1 +1,0 @@
-You can extract accuracy & loss by running Plot.py
