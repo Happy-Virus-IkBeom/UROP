@@ -127,12 +127,13 @@ class LotteryRunner(Runner):
             model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
                                          self.desc.model_hparams, self.desc.train_outputs)
             # print(model)
+            #print(self.desc.run_path(self.replicate, 0))
 
-            # Load Original_Save Parameter
-            for ep in [0,50]:
-                model.load_state_dict(torch.load('{}\model_ep{}_it0.pth'.format(location, ep)))
+            # Load Original_Save Parameter : As the batch size changes, the ep should be adjusted. default: batch_size=16
+            for ep,iteration in [[0,0],[13,1250]]:
+                model.load_state_dict(torch.load('{}\model_ep{}_it{}.pth'.format(location, ep,iteration)))
                 model.eval()
-                print("\nmodel_ep{}_it0.pth".format(ep))
+                print("\nmodel_ep{}_it{}.pth".format(ep,iteration))
                 #count = 0
 
                 for param_tensor in model.state_dict():
@@ -152,7 +153,7 @@ class LotteryRunner(Runner):
 
             """
             # Load Weights before & after Training => 내가 추가
-            for ep in range(50):
+            for ep in range(14):
                 for Label in ["Before","After"]:
                     print("\n {} Training \n".format(Label))
                     model.load_state_dict(torch.load('{}\weights\Record_Weights_{}_ep{}.pth'.format(location,Label, ep)),strict = False)
