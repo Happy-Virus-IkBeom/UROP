@@ -4,7 +4,7 @@
 Department of Electronic and Electrical Engineering
 Hongik University
 
-It was created by [IkBeom Lee] during his time as a undergraduate research assistant at Information Theory lab, Hongik University, Seoul, Korea starting in July. He has been advised by Albert No, assistant professor at Hongik University. It is his current working research codebase for UROP Projects. The prior study of this project is * [_The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks._](https://openreview.net/forum?id=rJl-b3RcF7) Jonathan Frankle & Michael Carbin. ICLR 2019.
+It was created by [IkBeom Lee] during his time as a undergraduate research assistant at Information Theory lab, Hongik University, Seoul, Korea starting in July. He has been advised by [Albert No], assistant professor at Hongik University. It is his current working research codebase for UROP Projects. The prior study of this project is * [_The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks._](https://openreview.net/forum?id=rJl-b3RcF7) [Jonathan Frankle & Michael Carbin]. ICLR 2019.
 
 ### 2.1 Requirements
 
