@@ -74,7 +74,7 @@ class LotteryRunner(Runner):
 
         if get_platform().is_primary_process: self.desc.save(self.desc.run_path(self.replicate, 0))
         if self.desc.pretrain_training_hparams: self._pretrain() # pretrain_training_hparams 있으면 pretraining
-        if get_platform().is_primary_process: self._establish_initial_weights() # 초기단계면 inistial_weight 만들기.
+        if get_platform().is_primary_process: self._establish_initial_weights() # 초기단계면 initial_weight 만들기.
         get_platform().barrier()
 
         for level in range(self.levels+1):
@@ -126,15 +126,19 @@ class LotteryRunner(Runner):
             print('\nPlotting Location is: ',location)
             model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
                                          self.desc.model_hparams, self.desc.train_outputs)
-            # print(model)
-            #print(self.desc.run_path(self.replicate, 0))
+            #print(model)
+            #print(self.desc.run_path(self.replicate, 0)) # 맨 처음 initialization 했던것 불러오기 위한 path.
+            #print(self.desc.train_start_step)
+            #print(self.desc.model_hparams)
+            #print(self.desc.train_outputs)
+            #print(location)
 
             # Load Original_Save Parameter : As the batch size changes, the ep should be adjusted. default: batch_size=16
             for ep,iteration in [[0,0],[13,1250]]:
                 model.load_state_dict(torch.load('{}\model_ep{}_it{}.pth'.format(location, ep,iteration)))
                 model.eval()
                 print("\nmodel_ep{}_it{}.pth".format(ep,iteration))
-                #count = 0
+
 
                 for param_tensor in model.state_dict():
                     #print(param_tensor, "\n", model.state_dict()[param_tensor])
@@ -143,13 +147,12 @@ class LotteryRunner(Runner):
 
                     #tensor에서 weight 만 추출
                     tensor = tensor[0]
-
+                    #print(tensor)
                     tensor = tensor.reshape(-1)
                     sns.kdeplot(tensor)
 
                     plt.savefig('{}\Distribution_of_weights_level{}_ep{}.png'.format(IMAGE_PATH, level, ep))
                 plt.clf()
-
 
             """
             # Load Weights before & after Training => 내가 추가
@@ -163,13 +166,14 @@ class LotteryRunner(Runner):
                         print(param_tensor, "\t", model.state_dict()[param_tensor])
                         #print(param_tensor, "\t", model.state_dict()[param_tensor].size())
             """
+
             return
 
         # 만약 트레이닝을 전에 시켰다면 위에서 return 해서 끝나버려서 여기까지 안옴.
         model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
                                      self.desc.model_hparams, self.desc.train_outputs)
-        pruned_model = PrunedModel(model, Mask.load(location)) # mask 불러와서 pruning하기
-        pruned_model.save(location, self.desc.train_start_step) # pruning 한 모델 저장
+        pruned_model = PrunedModel(model, Mask.load(location)) # model, mask 불러오기
+        pruned_model.save(location, self.desc.train_start_step) # pruned된 모델 저장
         if self.verbose and get_platform().is_primary_process:
             print('-'*82 + '\nPruning Level {}\n'.format(level) + '-'*82)   # level = 0, level = 1... 등 pruning level 표시
         train.standard_train(pruned_model, location, self.desc.dataset_hparams, self.desc.training_hparams,
@@ -186,4 +190,4 @@ class LotteryRunner(Runner):
             old_location = self.desc.run_path(self.replicate, level-1) # 아니라면 old location = 직전 level 에 저장된 path인 run_path
             model = models.registry.load(old_location, self.desc.train_end_step,
                                          self.desc.model_hparams, self.desc.train_outputs) # pruning이기때문에 train_end_step 불러오는것임!
-            pruning.registry.get(self.desc.pruning_hparams)(model, Mask.load(old_location)).save(new_location) # 프루닝 마스크 저장
+            pruning.registry.get(self.desc.pruning_hparams)(model, Mask.load(old_location)).save(new_location) # registry.get 에는 return partial 부분에 .prune이 있어 프루닝이 되고 이후 new_location에 저장.
