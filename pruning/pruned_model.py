@@ -14,7 +14,7 @@ class PrunedModel(Model):
     def to_mask_name(name):
         return 'mask_' + name.replace('.', '___')
 
-    def __init__(self, model: Model, mask: Mask):
+    def __init__(self, model: Model, mask: Mask, double_param_level = False): # optional 변수 적용
         if isinstance(model, PrunedModel): raise ValueError('Cannot nest pruned models.')
         super(PrunedModel, self).__init__()
         self.model = model
@@ -29,12 +29,24 @@ class PrunedModel(Model):
                 raise ValueError('Key {} found in mask but is not a valid model tensor.'.format(k))
 
         for k, v in mask.items(): self.register_buffer(PrunedModel.to_mask_name(k), v.float())
-        self._apply_mask()
+
+        if double_param_level:
+            self._apply_mask_double()
+
+        else:
+            self._apply_mask()
+
 
     def _apply_mask(self):
         for name, param in self.model.named_parameters():
             if hasattr(self, PrunedModel.to_mask_name(name)):
                 param.data *= getattr(self, PrunedModel.to_mask_name(name))
+
+    def _apply_mask_double(self):
+        for name, param in self.model.named_parameters():
+            if hasattr(self, PrunedModel.to_mask_name(name)):
+                param.data *= getattr(self, PrunedModel.to_mask_name(name))
+                param.data *= 2 # parameter 을 2배해주기.
 
     def forward(self, x):
         self._apply_mask()
