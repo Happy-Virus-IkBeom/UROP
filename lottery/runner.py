@@ -80,7 +80,8 @@ class LotteryRunner(Runner):
         for level in range(self.levels+1):
             if get_platform().is_primary_process: self._prune_level(level) # 프루닝 전단계 파라미터 불러오기
             get_platform().barrier()
-            self._train_level(level) # 프루닝 후 트레이닝 단계
+            self._train_level(level)  # 프루닝 후 트레이닝 단계
+
 
     # Helper methods for running the lottery.
     def _pretrain(self):
@@ -114,45 +115,47 @@ class LotteryRunner(Runner):
         new_model.save(location, self.desc.train_start_step) # new_model, train_start_step 저장.
 
     def _train_level(self, level: int):
-        location = self.desc.run_path(self.replicate, level)
+        location = self.desc.run_path(self.replicate, level) # 해당 level path
+
         if models.registry.exists(location, self.desc.train_end_step):
+
             # image PATH 가 없으면 make directory => 내가 추가한것.
             if not os.path.exists(f'{location}\Distribution_of_Weight'):
                 os.makedirs(f'{location}\Distribution_of_Weight')
 
-            IMAGE_PATH = f'{location}\Distribution_of_Weight'
-            # Weight Load & Weight Plotting => 내가 추가
+                IMAGE_PATH = f'{location}\Distribution_of_Weight'
+                # Weight Load & Weight Plotting => 내가 추가
 
-            print('\nPlotting Location is: ',location)
-            model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
-                                         self.desc.model_hparams, self.desc.train_outputs)
-            #print(model)
-            #print(self.desc.run_path(self.replicate, 0)) # 맨 처음 initialization 했던것 불러오기 위한 path.
-            #print(self.desc.train_start_step)
-            #print(self.desc.model_hparams)
-            #print(self.desc.train_outputs)
-            #print(location)
+                print('\nPlotting Location is: ',location)
+                model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
+                                             self.desc.model_hparams, self.desc.train_outputs)
+                #print(model)
+                #print(self.desc.run_path(self.replicate, 0)) # 맨 처음 initialization 했던것 불러오기 위한 path.
+                #print(self.desc.train_start_step)
+                #print(self.desc.model_hparams)
+                #print(self.desc.train_outputs)
+                #print(location)
 
-            # Load Original_Save Parameter : As the batch size changes, the ep should be adjusted. default: batch_size=16
-            for ep,iteration in [[0,0],[13,1250]]:
-                model.load_state_dict(torch.load('{}\model_ep{}_it{}.pth'.format(location, ep,iteration)))
-                model.eval()
-                print("\nmodel_ep{}_it{}.pth".format(ep,iteration))
+                # Load Original_Save Parameter : As the batch size changes, the ep should be adjusted. default: batch_size=16
+                for ep,iteration in [[0,0],[100,0]]:
+                    model.load_state_dict(torch.load('{}\model_ep{}_it{}.pth'.format(location, ep,iteration)))
+                    model.eval()
+                    print("\nmodel_ep{}_it{}.pth".format(ep,iteration))
 
 
-                for param_tensor in model.state_dict():
-                    #print(param_tensor, "\n", model.state_dict()[param_tensor])
-                    tensor = model.state_dict()[param_tensor]
-                    tensor = tensor.numpy()
+                    for param_tensor in model.state_dict():
+                        #print(param_tensor, "\n", model.state_dict()[param_tensor])
+                        tensor = model.state_dict()[param_tensor]
+                        tensor = tensor.numpy()
 
-                    #tensor에서 weight 만 추출
-                    tensor = tensor[0]
-                    #print(tensor)
-                    tensor = tensor.reshape(-1)
-                    sns.kdeplot(tensor)
+                        #tensor에서 weight 만 추출
+                        tensor = tensor[0]
+                        #print(tensor)
+                        tensor = tensor.reshape(-1)
+                        sns.kdeplot(tensor)
 
-                    plt.savefig('{}\Distribution_of_weights_level{}_ep{}.png'.format(IMAGE_PATH, level, ep))
-                plt.clf()
+                        plt.savefig('{}\Distribution_of_weights_level{}_ep{}.png'.format(IMAGE_PATH, level, ep))
+                    plt.clf()
 
             """
             # Load Weights before & after Training => 내가 추가
@@ -172,10 +175,29 @@ class LotteryRunner(Runner):
         # 만약 트레이닝을 전에 시켰다면 위에서 return 해서 끝나버려서 여기까지 안옴.
         model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
                                      self.desc.model_hparams, self.desc.train_outputs)
-        pruned_model = PrunedModel(model, Mask.load(location)) # model, mask 불러오기
+        # level 이 8 이상이면, 즉 21 % 남았을때 이후부터는 masking 한후 weight 에 2배
+        if level >= 8 :
+            pruned_model = PrunedModel(model, Mask.load(location), double_param_level = True)
+        else:
+            pruned_model = PrunedModel(model, Mask.load(location)) # model, mask 불러오기
+
         pruned_model.save(location, self.desc.train_start_step) # pruned된 모델 저장
+        print(f'Prunded Model is: {PrunedModel(model,Mask.load(location))}\n')
+        print(f'Mask.load is: {Mask.load(location)}')
         if self.verbose and get_platform().is_primary_process:
             print('-'*82 + '\nPruning Level {}\n'.format(level) + '-'*82)   # level = 0, level = 1... 등 pruning level 표시
+        """
+        # 내가 추가
+        if level > 7:
+            pruned_model.eval()
+            for param_tensor in pruned_model.state_dict():
+                tensor = pruned_model.state_dict()[param_tensor]
+                tensor = tensor.numpy()
+                tensor = tensor * 2
+                pruned_model.state_dict()[param_tensor] = tensor
+            pruned_model.save(location, self.desc.train_start_step)
+        """
+
         train.standard_train(pruned_model, location, self.desc.dataset_hparams, self.desc.training_hparams,
                              start_step=self.desc.train_start_step, verbose=self.verbose,
                              evaluate_every_epoch=self.evaluate_every_epoch) # training 하기 => trainig 할때는 trian_start_step의 parameter 사용
@@ -190,4 +212,6 @@ class LotteryRunner(Runner):
             old_location = self.desc.run_path(self.replicate, level-1) # 아니라면 old location = 직전 level 에 저장된 path인 run_path
             model = models.registry.load(old_location, self.desc.train_end_step,
                                          self.desc.model_hparams, self.desc.train_outputs) # pruning이기때문에 train_end_step 불러오는것임!
+
             pruning.registry.get(self.desc.pruning_hparams)(model, Mask.load(old_location)).save(new_location) # registry.get 에는 return partial 부분에 .prune이 있어 프루닝이 되고 이후 new_location에 저장.
+
