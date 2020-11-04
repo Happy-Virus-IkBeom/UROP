@@ -131,6 +131,7 @@ def plot_Early_Stopping_Loss():
 
     plt.cla()
     #plt.subplot(3,1,1)
+    plt.ylim(0,0.20)
     plt.plot(x_range, y1, color='blue', marker='+', label='Early_Stopping_Loss')
     plt.xlabel('level')
     plt.ylabel('Early_Stopping_Loss')
@@ -147,6 +148,7 @@ def plot_Early_Stopping_Loss():
 
     plt.cla()
     #plt.subplot(3, 1, 3)
+    plt.ylim(0.93, 0.99)
     plt.plot(x_range, y3, color='orange', marker='*', label='Early_Stopping_Accuracy' )
     plt.xlabel('level')
     plt.ylabel('Early_Stopping_Accuracy')
