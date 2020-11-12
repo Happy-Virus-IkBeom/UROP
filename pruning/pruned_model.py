@@ -14,7 +14,7 @@ class PrunedModel(Model):
     def to_mask_name(name):
         return 'mask_' + name.replace('.', '___')
 
-    def __init__(self, model: Model, mask: Mask, double_param_level = False): # optional 변수 적용
+    def __init__(self, model: Model, mask: Mask, double_param_level = False, layer_different = False): # optional 변수 적용
         if isinstance(model, PrunedModel): raise ValueError('Cannot nest pruned models.')
         super(PrunedModel, self).__init__()
         self.model = model
@@ -33,20 +33,32 @@ class PrunedModel(Model):
         if double_param_level:
             self._apply_mask_double()
 
+        elif layer_different:
+            self._apply_layer_different()
+
         else:
             self._apply_mask()
 
 
     def _apply_mask(self):
-        for name, param in self.model.named_parameters():
+        for name, param in self.model.named_parameters(): # name: fc_layers.0.weight /fc_layers.1.weight/fc.weight
             if hasattr(self, PrunedModel.to_mask_name(name)):
                 param.data *= getattr(self, PrunedModel.to_mask_name(name))
+                #print(type(param.data), '\n', name, '\n', param.data)
 
     def _apply_mask_double(self):
         for name, param in self.model.named_parameters():
             if hasattr(self, PrunedModel.to_mask_name(name)):
                 param.data *= getattr(self, PrunedModel.to_mask_name(name))
                 param.data *= 2 # parameter 을 2배해주기.
+
+    def _apply_layer_different(self):
+        for name, param in self.model.named_parameters():
+            if hasattr(self, PrunedModel.to_mask_name(name)):
+                param.data *= getattr(self, PrunedModel.to_mask_name(name))
+                param.data[0] *= 0.5
+                param.data[1] *= 2
+                param.data[2] *= 3
 
     def forward(self, x):
         self._apply_mask()
