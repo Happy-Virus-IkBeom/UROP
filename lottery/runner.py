@@ -129,15 +129,9 @@ class LotteryRunner(Runner):
                 print('\nPlotting Location is: ',location)
                 model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
                                              self.desc.model_hparams, self.desc.train_outputs)
-                #print(model)
-                #print(self.desc.run_path(self.replicate, 0)) # 맨 처음 initialization 했던것 불러오기 위한 path.
-                #print(self.desc.train_start_step)
-                #print(self.desc.model_hparams)
-                #print(self.desc.train_outputs)
-                #print(location)
 
                 # Load Original_Save Parameter : As the batch size changes, the ep should be adjusted. default: batch_size=16
-                for ep,iteration in [[0,0],[100,0]]:
+                for ep,iteration in [[0,0],[149,234]]:
                     model.load_state_dict(torch.load('{}\model_ep{}_it{}.pth'.format(location, ep,iteration)))
                     model.eval()
                     print("\nmodel_ep{}_it{}.pth".format(ep,iteration))
@@ -175,19 +169,20 @@ class LotteryRunner(Runner):
         # 만약 트레이닝을 전에 시켰다면 위에서 return 해서 끝나버려서 여기까지 안옴.
         model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
                                      self.desc.model_hparams, self.desc.train_outputs)
-        # level 이 8 이상이면, 즉 21 % 남았을때 이후부터는 masking 한후 weight 에 2배
-        if level >= 8 :
-            pruned_model = PrunedModel(model, Mask.load(location), double_param_level = True)
+        # level 7일때부터(즉 21 % 남았을때 부터)는 double_param_level = True 이면 초기화시 masking 후 2배 적용,
+        # layer_differnt = True 이면 layer 별로 masking 한후 각기 다르게 상수배 해줌.
+        if level >= 7 :
+            pruned_model = PrunedModel(model, Mask.load(location), double_param_level = False, layer_different = True)
         else:
             pruned_model = PrunedModel(model, Mask.load(location)) # model, mask 불러오기
 
         pruned_model.save(location, self.desc.train_start_step) # pruned된 모델 저장
-        print(f'Prunded Model is: {PrunedModel(model,Mask.load(location))}\n')
-        print(f'Mask.load is: {Mask.load(location)}')
+        #print(f'Prunded Model is: {PrunedModel(model,Mask.load(location))}\n')
+        #print(f'Mask.load is: {Mask.load(location)}')
         if self.verbose and get_platform().is_primary_process:
             print('-'*82 + '\nPruning Level {}\n'.format(level) + '-'*82)   # level = 0, level = 1... 등 pruning level 표시
         """
-        # 내가 추가
+        # 내가 추가 (tensor 다루는법이 있어서 남겨둠)
         if level > 7:
             pruned_model.eval()
             for param_tensor in pruned_model.state_dict():
