@@ -15,7 +15,8 @@ def path_Level():
 # FCN that change file name to logger.csv
 def file_name_change_to_logger(file_path, level, x):
 
-    full_path = str(f'{file_path}\\{x+1}배\\replicate_1\level_{level}\main')
+    #full_path = str(f'{file_path}\\{x+1}배\\replicate_1\level_{level}\main')
+    full_path = str(f'{file_path}\\\\replicate_{x+1}\level_{level}\main')
     file_names = os.listdir(f'{full_path}')
 
     # logger.csv 라는 확장자가 없으면 .csv를 뒤에 붙혀서 파일변환을 해줌.
@@ -32,7 +33,8 @@ def entire_loss_list(file_path, level, x):
     test_accuracy = []
     loss = []
     accuracy = []
-    f = open(f'{file_path}\\{x+1}배\\replicate_1\level_{level}\main\logger.csv')
+    #f = open(f'{file_path}\\{x+1}배\\replicate_1\level_{level}\main\logger.csv')
+    f = open(f'{file_path}\\\\replicate_{x+1}\level_{level}\main\logger.csv')
     print(f"================  level : {level}  ================")
     reader = csv.reader(f)
     for line in reader:
@@ -74,21 +76,25 @@ def plot_accuracy():
     plt.cla()
     i = 7
 
-    for x in range(5):
-        print(f'{file_path}\\{x+1}배\\replicate_1\level_{i}\main\logger.csv')
+    for x in [6,7,8,9]:
+        #print(f'{file_path}\\{x+1}배\\replicate_1\level_{i}\main\logger.csv')
+        print(f'{file_path}\\\\replicate_{x+1}\level_{i}\main\logger.csv')
         file_name_change_to_logger(file_path, i, x)
         loss, length_of_test_loss, accuracy, length_of_test_accuracy = entire_loss_list(file_path, i, x)
         x_range = np.linspace(0, len(loss), len(loss))
         y1 = loss
         y2 = accuracy
 
-        plt.ylim(0.94, 0.99)
+        plt.ylim(0.9775, 0.99)
         line = plt.plot(x_range, y2, label='accuracy')
         plt.setp(line, linewidth = 0.8 )
         plt.xlabel('epoch')
         plt.ylabel('accuracy')
-        plt.title('accuracy')
-    plt.legend(['x1', 'x2', 'x3', 'x4', 'x5'])
-    plt.savefig(f'{file_path}\\accuracy.png')
+        plt.title('accuracy at 21% remaining point')
+    #plt.legend(['x1', 'x2', 'x3', 'x4', 'x5'])
+    #plt.legend(['x0.5,x2,x3', 'x0.5,x3,x2', 'x2,x0.5,x3', 'x3,x0.5,x2', 'x2,x3,x0.5', 'x3,x2,x0.5','x1,x1,x1'])
+    plt.legend(['x1,x1,x2','x1,x2,x1','x2,x1,x1','x1,x1,x1'])
+    #plt.legend(['x3,x0.5,x2', 'x3,x2,x0.5'])
+    plt.savefig(f'{file_path}\\accuracy3.png')
 
 plot_accuracy()
