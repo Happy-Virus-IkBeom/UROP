@@ -45,13 +45,14 @@ class PrunedModel(Model):
             if hasattr(self, PrunedModel.to_mask_name(name)):
                 param.data *= getattr(self, PrunedModel.to_mask_name(name))
                 #print(type(param.data), '\n', name, '\n', param.data)
-
+                
+    ## 내가 추가한것
     def _apply_mask_double(self):
         for name, param in self.model.named_parameters():
             if hasattr(self, PrunedModel.to_mask_name(name)):
                 param.data *= getattr(self, PrunedModel.to_mask_name(name))
                 param.data *= 2 # parameter 을 2배해주기.
-
+    ## 내가 추가한것
     def _apply_layer_different(self):
         for name, param in self.model.named_parameters():
             if hasattr(self, PrunedModel.to_mask_name(name)):
